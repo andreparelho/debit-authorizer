@@ -1,9 +1,7 @@
 package service
 
 import (
-	"log/slog"
 	"net/http"
-	"os"
 	"sync"
 	"time"
 
@@ -17,8 +15,6 @@ const LAST_FIVE_MINUTES = 5 * time.Minute
 var clientHistory = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
 var now time.Time = time.Now()
-var jsonHandler = slog.NewJSONHandler(os.Stderr, nil)
-var myslog = slog.New(jsonHandler)
 
 type Service struct {
 	ResponseWriter http.ResponseWriter
