@@ -9,6 +9,7 @@ import (
 
 	requestHandler "github.com/andreparelho/credit-approver/model/handler/request"
 	serviceDTO "github.com/andreparelho/credit-approver/model/service/dto"
+	logger "github.com/andreparelho/credit-approver/util/logUtil"
 )
 
 const LAST_FIVE_MINUTES = 5 * time.Minute
@@ -39,6 +40,7 @@ func (writer *Service) ApproverService(requestHandler requestHandler.RequestAppr
 			LastPayment: now,
 			TotalAmount: requestHandler.Amount,
 		}
+		logger.ServiceLoggerInfo(client, requestHandler.ClientId, "client created")
 	}
 
 	if now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
@@ -46,6 +48,7 @@ func (writer *Service) ApproverService(requestHandler requestHandler.RequestAppr
 		writer.ResponseWriter.Header().Set("Content-Type", "application/json")
 		writer.ResponseWriter.WriteHeader(http.StatusTooManyRequests)
 		writer.ResponseWriter.Write(message)
+		logger.ServiceLoggerInfo(client, requestHandler.ClientId, "Please wait 5 minutes")
 		return
 	}
 
@@ -55,6 +58,7 @@ func (writer *Service) ApproverService(requestHandler requestHandler.RequestAppr
 		writer.ResponseWriter.Header().Set("Content-Type", "application/json")
 		writer.ResponseWriter.WriteHeader(http.StatusBadRequest)
 		writer.ResponseWriter.Write(message)
+		logger.ServiceLoggerInfo(client, requestHandler.ClientId, "Sorry you have reached your credit limit")
 		return
 	}
 
@@ -66,4 +70,5 @@ func (writer *Service) ApproverService(requestHandler requestHandler.RequestAppr
 	writer.ResponseWriter.Header().Set("Content-Type", "application/json")
 	writer.ResponseWriter.WriteHeader(http.StatusOK)
 	writer.ResponseWriter.Write(message)
+	logger.ServiceLoggerInfo(client, requestHandler.ClientId, "Credit approved")
 }
