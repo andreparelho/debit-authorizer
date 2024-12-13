@@ -1,7 +1,6 @@
 package service
 
 import (
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -51,9 +50,7 @@ func (writer *Service) ApproverService(requestHandler requestHandler.RequestAppr
 	}
 
 	var totalAmount = client.TotalAmount + requestHandler.Amount
-	log.Println("Total Amount = ", totalAmount)
 	if totalAmount > 1000 {
-		log.Println("Total Amount = ", totalAmount)
 		var message []byte = []byte(`{"message": "Sorry you have reached your credit limit"}`)
 		writer.ResponseWriter.Header().Set("Content-Type", "application/json")
 		writer.ResponseWriter.WriteHeader(http.StatusBadRequest)
@@ -61,13 +58,10 @@ func (writer *Service) ApproverService(requestHandler requestHandler.RequestAppr
 		return
 	}
 
-	myslog.Info(requestHandler.ClientId, client.LastPayment, client.TotalAmount)
-
 	client.LastPayment = now
 	client.TotalAmount = totalAmount
 	clientHistory[requestHandler.ClientId] = client
 
-	myslog.Info(requestHandler.ClientId, client.LastPayment, client.TotalAmount)
 	var message []byte = []byte(`{"message": "Credit approved"}`)
 	writer.ResponseWriter.Header().Set("Content-Type", "application/json")
 	writer.ResponseWriter.WriteHeader(http.StatusOK)
