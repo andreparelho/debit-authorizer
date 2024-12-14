@@ -1,10 +1,10 @@
-package main
+package Main
 
 import (
 	"fmt"
 	"net/http"
 
-	"github.com/andreparelho/credit-approver/handler"
+	"github.com/andreparelho/debit-authorizer/handler"
 )
 
 func main() {
