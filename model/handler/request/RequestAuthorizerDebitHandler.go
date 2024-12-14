@@ -1,6 +1,6 @@
 package model
 
-type RequestApproverHandler struct {
+type RequestAuthorizerDebitHandler struct {
 	ClientId string  `json:"clientId"`
 	Amount   float64 `json:"amount"`
 }

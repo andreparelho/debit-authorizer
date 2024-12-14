@@ -15,7 +15,7 @@ const LAST_FIVE_MINUTES = 1 * time.Minute
 var clientHistory = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
 
-func DebitAuthorizerService(requestHandler requestHandler.RequestApproverHandler) ([]byte, error) {
+func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebitHandler) ([]byte, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 

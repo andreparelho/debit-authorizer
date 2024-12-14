@@ -24,7 +24,7 @@ func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Re
 		return
 	}
 
-	var requestHandler requestHandler.RequestApproverHandler
+	var requestHandler requestHandler.RequestAuthorizerDebitHandler
 	var requestHandlerError error = json.NewDecoder(request.Body).Decode(&requestHandler)
 	if requestHandlerError != nil {
 		var message []byte = []byte(`{"message": "Error to decode json"}`)
