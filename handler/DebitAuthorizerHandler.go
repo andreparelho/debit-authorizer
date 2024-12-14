@@ -16,7 +16,7 @@ const MINIMUM_AMOUNT_REQUEST float64 = 0.01
 
 func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Request) {
 	defer request.Body.Close()
-	var httpUtil = httpUtil.ResponseJSONConstructor(responseWriter)
+	var httpUtil *httpUtil.HttpUtil = httpUtil.ResponseJSONConstructor(responseWriter)
 
 	if request.Method != POST_METHOD {
 		var message []byte = []byte(`{"message": "Invalid method"}`)
@@ -41,7 +41,7 @@ func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Re
 
 	var amountRequest float64 = requestHandler.Amount
 	if amountString := strconv.Itoa(int(amountRequest)); amountString == EMPTY || amountRequest <= MINIMUM_AMOUNT_REQUEST {
-		var message []byte = []byte(`{"message": "Propertie amout is empty or less than zero"}`)
+		var message []byte = []byte(`{"message": "Propertie amount is empty or less than minimum"}`)
 		httpUtil.ResponseJSON(message, http.StatusBadRequest)
 		return
 	}
