@@ -5,35 +5,40 @@ import (
 	"sync"
 	"time"
 
-	requestHandler "github.com/andreparelho/debit-authorizer/model/handler/request"
-	serviceDTO "github.com/andreparelho/debit-authorizer/model/service/dto"
+	request "github.com/andreparelho/debit-authorizer/model/common"
+	serviceDTO "github.com/andreparelho/debit-authorizer/model/service"
 	logger "github.com/andreparelho/debit-authorizer/util/logUtil"
 )
 
 const LAST_FIVE_MINUTES = 5 * time.Minute
 const MAX_TOTAL_AMOUNT = 1000
+const EMPTY_VALUE = ""
 
 var clientHistorical = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
 var message []byte
 
-func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebitHandler) ([]byte, error) {
+func DebitAuthorizerService(request request.RequestAuthorizerDebit) ([]byte, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
 	var now time.Time = time.Now()
-	var clientId = requestHandler.ClientId
+	var dateTime time.Time
+	if request.DateTime.IsZero() {
+		dateTime = now
+	}
 
+	var clientId = request.ClientId
 	client, isCreated := clientHistorical[clientId]
 	if !isCreated {
-		clientHistorical[requestHandler.ClientId] = serviceDTO.Client{
-			LastPayment: now,
-			TotalAmount: requestHandler.Amount,
+		clientHistorical[request.ClientId] = serviceDTO.Client{
+			LastPayment: dateTime,
+			TotalAmount: request.Amount,
 		}
 		logger.ServiceLoggerInfo(client, clientId, "client created")
 	}
 
-	var totalAmount = client.TotalAmount + requestHandler.Amount
+	var totalAmount = client.TotalAmount + request.Amount
 	if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
 		message = []byte(`{"message": "Sorry you have reached your debit limit"}`)
 		var errorMessage error = errors.New("Sorry you have reached your debit limit")
@@ -42,7 +47,7 @@ func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebit
 		return message, errorMessage
 	}
 
-	client.LastPayment = now
+	client.LastPayment = dateTime
 	client.TotalAmount = totalAmount
 	clientHistorical[clientId] = client
 
