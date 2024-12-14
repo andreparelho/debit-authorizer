@@ -14,6 +14,7 @@ const LAST_FIVE_MINUTES = 5 * time.Minute
 
 var clientHistorical = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
+var message []byte
 
 func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebitHandler) ([]byte, error) {
 	mutex.Lock()
@@ -33,7 +34,7 @@ func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebit
 
 	var totalAmount = client.TotalAmount + requestHandler.Amount
 	if totalAmount > 1000 && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
-		var message []byte = []byte(`{"message": "Sorry you have reached your debit limit"}`)
+		message = []byte(`{"message": "Sorry you have reached your debit limit"}`)
 		logger.ServiceLoggerInfo(client, clientId, "Sorry you have reached your debit limit")
 
 		var errorMessage error = errors.New("Sorry you have reached your debit limit")
@@ -45,7 +46,7 @@ func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebit
 	client.TotalAmount = totalAmount
 	clientHistorical[clientId] = client
 
-	var message []byte = []byte(`{"message": "debit approved"}`)
+	message = []byte(`{"message": "debit approved"}`)
 	logger.ServiceLoggerInfo(client, clientId, "debit approved")
 	return message, nil
 }
