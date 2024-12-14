@@ -36,10 +36,9 @@ func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebit
 	var totalAmount = client.TotalAmount + requestHandler.Amount
 	if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
 		message = []byte(`{"message": "Sorry you have reached your debit limit"}`)
-		logger.ServiceLoggerInfo(client, clientId, "Sorry you have reached your debit limit")
-
 		var errorMessage error = errors.New("Sorry you have reached your debit limit")
 
+		logger.ServiceLoggerInfo(client, clientId, "Sorry you have reached your debit limit")
 		return message, errorMessage
 	}
 
