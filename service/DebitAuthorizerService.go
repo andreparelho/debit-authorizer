@@ -11,6 +11,7 @@ import (
 )
 
 const LAST_FIVE_MINUTES = 5 * time.Minute
+const MAX_TOTAL_AMOUNT = 1000
 
 var clientHistorical = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
@@ -33,7 +34,7 @@ func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebit
 	}
 
 	var totalAmount = client.TotalAmount + requestHandler.Amount
-	if totalAmount > 1000 && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
+	if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
 		message = []byte(`{"message": "Sorry you have reached your debit limit"}`)
 		logger.ServiceLoggerInfo(client, clientId, "Sorry you have reached your debit limit")
 
