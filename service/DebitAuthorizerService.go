@@ -10,7 +10,7 @@ import (
 	logger "github.com/andreparelho/debit-authorizer/util/logUtil"
 )
 
-const LAST_FIVE_MINUTES = 1 * time.Minute
+const LAST_FIVE_MINUTES = 5 * time.Minute
 
 var clientHistory = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
