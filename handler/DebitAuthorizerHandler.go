@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
 
 	requestHandler "github.com/andreparelho/debit-authorizer/model/handler/request"
 	service "github.com/andreparelho/debit-authorizer/service"
@@ -40,7 +39,7 @@ func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Re
 	}
 
 	var amountRequest float64 = requestHandler.Amount
-	if amountString := strconv.Itoa(int(amountRequest)); amountString == EMPTY || amountRequest <= MINIMUM_AMOUNT_REQUEST {
+	if amountRequest <= MINIMUM_AMOUNT_REQUEST {
 		var message []byte = []byte(`{"message": "Propertie amount is empty or less than minimum"}`)
 		httpUtil.ResponseJSON(message, http.StatusBadRequest)
 		return
