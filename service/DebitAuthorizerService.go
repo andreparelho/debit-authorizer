@@ -12,7 +12,7 @@ import (
 
 const LAST_FIVE_MINUTES = 5 * time.Minute
 
-var clientHistory = make(map[string]serviceDTO.Client)
+var clientHistorical = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
 
 func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebitHandler) ([]byte, error) {
@@ -22,9 +22,9 @@ func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebit
 	var now time.Time = time.Now()
 	var clientId = requestHandler.ClientId
 
-	client, isCreated := clientHistory[clientId]
+	client, isCreated := clientHistorical[clientId]
 	if !isCreated {
-		clientHistory[requestHandler.ClientId] = serviceDTO.Client{
+		clientHistorical[requestHandler.ClientId] = serviceDTO.Client{
 			LastPayment: now,
 			TotalAmount: requestHandler.Amount,
 		}
@@ -43,7 +43,7 @@ func DebitAuthorizerService(requestHandler requestHandler.RequestAuthorizerDebit
 
 	client.LastPayment = now
 	client.TotalAmount = totalAmount
-	clientHistory[clientId] = client
+	clientHistorical[clientId] = client
 
 	var message []byte = []byte(`{"message": "debit approved"}`)
 	logger.ServiceLoggerInfo(client, clientId, "debit approved")
