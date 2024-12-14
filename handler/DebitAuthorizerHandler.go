@@ -12,15 +12,15 @@ import (
 
 const POST_METHOD string = "POST"
 const EMPTY string = ""
-const ZERO int64 = 0
+const MINIMUM_AMOUNT_REQUEST float64 = 0.01
 
-func ApproverHandler(responseWriter http.ResponseWriter, request *http.Request) {
+func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Request) {
+	defer request.Body.Close()
 	var httpUtil = httpUtil.ResponseJSONConstructor(responseWriter)
 
 	if request.Method != POST_METHOD {
 		var message []byte = []byte(`{"message": "Invalid method"}`)
 		httpUtil.ResponseJSON(message, http.StatusMethodNotAllowed)
-		responseWriter.Write(message)
 		return
 	}
 
@@ -35,21 +35,18 @@ func ApproverHandler(responseWriter http.ResponseWriter, request *http.Request) 
 	var clientId string = requestHandler.ClientId
 	if clientId == EMPTY {
 		var message []byte = []byte(`{"message": "Propertie clientId is empty"}`)
-		responseWriter.Header().Set("Content-Type", "application/json")
 		httpUtil.ResponseJSON(message, http.StatusBadRequest)
 		return
 	}
 
-	var amountRequest int64 = requestHandler.Amount
-	if amount := strconv.Itoa(int(amountRequest)); amountRequest <= ZERO || amount == EMPTY {
+	var amountRequest float64 = requestHandler.Amount
+	if amountString := strconv.Itoa(int(amountRequest)); amountString == EMPTY || amountRequest <= MINIMUM_AMOUNT_REQUEST {
 		var message []byte = []byte(`{"message": "Propertie amout is empty or less than zero"}`)
 		httpUtil.ResponseJSON(message, http.StatusBadRequest)
 		return
 	}
 
-	defer request.Body.Close()
-
-	message, errorService := service.ApproverService(requestHandler)
+	message, errorService := service.DebitAuthorizerService(requestHandler)
 	if errorService != nil {
 		httpUtil.ResponseJSON(message, http.StatusTooManyRequests)
 		return
