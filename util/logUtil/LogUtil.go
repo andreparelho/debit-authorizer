@@ -4,7 +4,7 @@ import (
 	"os"
 	"strconv"
 
-	serviceDTO "github.com/andreparelho/credit-approver/model/service/dto"
+	serviceDTO "github.com/andreparelho/debit-authorizer/model/service/dto"
 	"github.com/rs/zerolog"
 )
 
