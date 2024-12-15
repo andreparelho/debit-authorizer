@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"sync"
 	"time"
 
@@ -17,6 +18,7 @@ const EMPTY_VALUE = ""
 var transactionHitorical = make(map[string]serviceDTO.Client)
 var mutex sync.Mutex
 var message []byte
+var valueMessage string
 
 func DebitAuthorizerService(request request.RequestAuthorizerDebit) ([]byte, error) {
 	mutex.Lock()
@@ -42,18 +44,20 @@ func DebitAuthorizerService(request request.RequestAuthorizerDebit) ([]byte, err
 
 	var totalAmount = client.TotalAmount + request.Amount
 	if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
-		message = []byte(`{"message": "Sorry you have reached your debit limit"}`)
-		var errorMessage error = errors.New("sorry you have reached your debit limit")
+		valueMessage = "sorry you have reached your debit limit"
+		message = []byte(fmt.Sprintf(`{"message": "%s"}`, valueMessage))
+		var errorMessage error = errors.New(valueMessage)
 
-		logger.ServiceLoggerError(client, clientId, "Sorry you have reached your debit limit")
+		logger.ServiceLoggerError(client, clientId, valueMessage)
 		return message, errorMessage
 	}
 
 	if totalAmount > MAX_TOTAL_AMOUNT {
-		message = []byte(`{"message": "Sorry the amount sent is greater than the allowed limit."}`)
-		var errorMessage error = errors.New("sorry the amount sent is greater than the allowed limit")
+		valueMessage = "sorry the amount sent is greater than the allowed limit"
+		message = []byte(fmt.Sprintf(`{"message": "%s"}`, valueMessage))
+		var errorMessage error = errors.New(valueMessage)
 
-		logger.ServiceLoggerError(client, clientId, "Sorry the amount sent is greater than the allowed limit.")
+		logger.ServiceLoggerError(client, clientId, valueMessage)
 		return message, errorMessage
 	}
 
