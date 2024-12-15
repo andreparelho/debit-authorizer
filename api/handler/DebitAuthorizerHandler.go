@@ -10,7 +10,7 @@ import (
 )
 
 const POST_METHOD string = "POST"
-const EMPTY string = ""
+const EMPTY_VALUE string = ""
 const MINIMUM_AMOUNT_REQUEST float64 = 0.01
 
 func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Request) {
@@ -32,7 +32,7 @@ func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Re
 	}
 
 	var clientId string = requestHandler.ClientId
-	if clientId == EMPTY {
+	if clientId == EMPTY_VALUE {
 		var message []byte = []byte(`{"message": "Propertie clientId is empty"}`)
 		httpUtil.ResponseJSON(message, http.StatusBadRequest)
 		return
