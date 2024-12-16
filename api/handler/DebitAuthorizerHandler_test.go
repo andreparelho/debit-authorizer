@@ -97,7 +97,7 @@ func TestDebitAuthorizerHandler(test *testing.T) {
 		assert.Equal(test, responseWriter.Body.String(), errorMessage)
 	})
 
-	test.Run("Deve sucesso quando enviar os parametros corretos", func(test *testing.T) {
+	test.Run("Deve validar sucesso quando enviar os parametros corretos", func(test *testing.T) {
 		var responseWriter *httptest.ResponseRecorder = httptest.NewRecorder()
 		var bodyRequest *bytes.Buffer = bytes.NewBuffer([]byte(`{"clientId": "2","amount": 1000}`))
 		var request *http.Request = httptest.NewRequest("POST", ENDPOINT_URL, bodyRequest)
