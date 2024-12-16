@@ -65,7 +65,7 @@ func TestDebitAuthorizerHandler(test *testing.T) {
 		assert.Equal(test, responseWriter.Body.String(), errorMessage)
 	})
 
-	test.Run("Deve validar erro quando enviar valor acima do esperado", func(test *testing.T) {
+	test.Run("Deve validar erro quando enviar valor acima do esperado no primeiro request", func(test *testing.T) {
 		var responseWriter *httptest.ResponseRecorder = httptest.NewRecorder()
 		var bodyRequest *bytes.Buffer = bytes.NewBuffer([]byte(`{"clientId": "1","amount": 10000}`))
 		var request *http.Request = httptest.NewRequest("POST", ENDPOINT_URL, bodyRequest)
@@ -78,7 +78,7 @@ func TestDebitAuthorizerHandler(test *testing.T) {
 		assert.Equal(test, responseWriter.Body.String(), errorMessage)
 	})
 
-	test.Run("Deve validar erro quando enviar valor acima do esperado", func(test *testing.T) {
+	test.Run("Deve validar erro quando atingir o limite", func(test *testing.T) {
 		var responseWriter *httptest.ResponseRecorder = httptest.NewRecorder()
 		var bodyRequest *bytes.Buffer = bytes.NewBuffer([]byte(`{"clientId": "1","amount": 1000}`))
 		var request *http.Request = httptest.NewRequest("POST", ENDPOINT_URL, bodyRequest)
@@ -95,5 +95,18 @@ func TestDebitAuthorizerHandler(test *testing.T) {
 
 		assert.True(test, responseWriter.Result().StatusCode == http.StatusTooManyRequests)
 		assert.Equal(test, responseWriter.Body.String(), errorMessage)
+	})
+
+	test.Run("Deve sucesso quando enviar os parametros corretos", func(test *testing.T) {
+		var responseWriter *httptest.ResponseRecorder = httptest.NewRecorder()
+		var bodyRequest *bytes.Buffer = bytes.NewBuffer([]byte(`{"clientId": "2","amount": 1000}`))
+		var request *http.Request = httptest.NewRequest("POST", ENDPOINT_URL, bodyRequest)
+
+		handler.DebitAuthorizerHandler(responseWriter, request)
+
+		var successMessage string = `{"message": "debit approved"}`
+
+		assert.True(test, responseWriter.Result().StatusCode == http.StatusOK)
+		assert.Equal(test, responseWriter.Body.String(), successMessage)
 	})
 }
