@@ -31,11 +31,11 @@ func main() {
 			Amount:   amount,
 		}
 
-		_, errorService := service.DebitAuthorizerService(request)
+		response, errorService := service.DebitAuthorizerService(request)
 		if errorService != nil {
 			fmt.Println(errorService.Error())
 		} else {
-			fmt.Println("Debit approved")
+			fmt.Println(response)
 		}
 
 		fmt.Print("Deseja finalizar? SIM / NAO: ")
