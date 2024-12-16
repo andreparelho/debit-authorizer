@@ -18,7 +18,7 @@ func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Re
 	var httpUtil *httpUtil.HttpUtil = httpUtil.ResponseJSONConstructor(responseWriter)
 
 	if request.Method != POST_METHOD {
-		var message []byte = []byte(`{"message": "Invalid method"}`)
+		var message []byte = []byte(`{"message": "invalid method"}`)
 		httpUtil.ResponseJSON(message, http.StatusMethodNotAllowed)
 		return
 	}
@@ -26,21 +26,21 @@ func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Re
 	var requestHandler requestHandler.RequestAuthorizerDebit
 	var requestHandlerError error = json.NewDecoder(request.Body).Decode(&requestHandler)
 	if requestHandlerError != nil {
-		var message []byte = []byte(`{"message": "Error to decode json"}`)
+		var message []byte = []byte(`{"message": "error to decode json"}`)
 		httpUtil.ResponseJSON(message, http.StatusInternalServerError)
 		return
 	}
 
 	var clientId string = requestHandler.ClientId
 	if clientId == EMPTY_VALUE {
-		var message []byte = []byte(`{"message": "Propertie clientId is empty"}`)
+		var message []byte = []byte(`{"message": "propertie clientId is empty"}`)
 		httpUtil.ResponseJSON(message, http.StatusBadRequest)
 		return
 	}
 
 	var amountRequest float64 = requestHandler.Amount
 	if amountRequest <= MINIMUM_AMOUNT_REQUEST {
-		var message []byte = []byte(`{"message": "Propertie amount is empty or less than minimum"}`)
+		var message []byte = []byte(`{"message": "propertie amount is empty or less than minimum"}`)
 		httpUtil.ResponseJSON(message, http.StatusBadRequest)
 		return
 	}
