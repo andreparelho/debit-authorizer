@@ -2,12 +2,12 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"sync"
 	"time"
 
 	request "github.com/andreparelho/debit-authorizer/model/common"
-	serviceDTO "github.com/andreparelho/debit-authorizer/model/service"
+	model "github.com/andreparelho/debit-authorizer/model/service"
+	repository "github.com/andreparelho/debit-authorizer/repository"
 	logger "github.com/andreparelho/debit-authorizer/util/logUtil"
 )
 
@@ -15,12 +15,11 @@ const LAST_FIVE_MINUTES = 5 * time.Minute
 const MAX_TOTAL_AMOUNT = 1000
 const EMPTY_VALUE = ""
 
-var transactionHitorical = make(map[string]serviceDTO.Client)
+var transactionHitorical = make(map[string]model.Client)
 var mutex sync.Mutex
-var message []byte
 var valueMessage string
 
-func DebitAuthorizerService(request request.RequestAuthorizerDebit) ([]byte, error) {
+func DebitAuthorizerService(request request.RequestAuthorizerDebit) (model.Client, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 
@@ -34,38 +33,42 @@ func DebitAuthorizerService(request request.RequestAuthorizerDebit) ([]byte, err
 
 	var clientId = request.ClientId
 	client, isCreated := transactionHitorical[clientId]
-	if !isCreated {
-		transactionHitorical[request.ClientId] = serviceDTO.Client{
-			LastPayment: dateTime,
-			TotalAmount: request.Amount,
-		}
-		logger.ServiceLoggerInfo(client, clientId, "client created")
-	}
-
 	var totalAmount = client.TotalAmount + request.Amount
+
 	if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
 		valueMessage = "sorry you have reached your debit limit"
-		message = []byte(fmt.Sprintf(`{"message": "%s"}`, valueMessage))
 		var errorMessage error = errors.New(valueMessage)
 
-		logger.ServiceLoggerError(client, clientId, valueMessage)
-		return message, errorMessage
+		logger.ServiceLoggerError(client.LastPayment, client.TotalAmount, clientId, valueMessage)
+		return model.Client{}, errorMessage
 	}
 
 	if totalAmount > MAX_TOTAL_AMOUNT {
 		valueMessage = "sorry the amount sent is greater than the allowed limit"
-		message = []byte(fmt.Sprintf(`{"message": "%s"}`, valueMessage))
 		var errorMessage error = errors.New(valueMessage)
 
-		logger.ServiceLoggerError(client, clientId, valueMessage)
-		return message, errorMessage
+		logger.ServiceLoggerError(client.LastPayment, client.TotalAmount, client.ClientId, valueMessage)
+		return model.Client{}, errorMessage
 	}
 
-	client.LastPayment = dateTime
-	client.TotalAmount = totalAmount
-	transactionHitorical[clientId] = client
+	if !isCreated {
+		client = model.Client{
+			ClientId:    clientId,
+			LastPayment: dateTime,
+			TotalAmount: request.Amount,
+			Historical:  []model.Historical{},
+		}
 
-	message = []byte(`{"message": "debit approved"}`)
-	logger.ServiceLoggerInfo(client, clientId, "debit approved")
-	return message, nil
+		repository.CreateClientHistorical(transactionHitorical, client, dateTime, request.Amount)
+		logger.ServiceLoggerInfo(dateTime, request.Amount, clientId, "client created")
+	}
+
+	if isCreated {
+		repository.UpdateClientHistorical(client, transactionHitorical, clientId, dateTime, totalAmount, request.Amount)
+	}
+
+	valueMessage = "debit approved"
+	logger.ServiceLoggerInfo(client.LastPayment, client.TotalAmount, clientId, valueMessage)
+
+	return repository.GetClientHitorical(clientId, transactionHitorical), nil
 }
