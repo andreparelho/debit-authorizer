@@ -45,11 +45,12 @@ func DebitAuthorizerHandler(responseWriter http.ResponseWriter, request *http.Re
 		return
 	}
 
-	message, errorService := service.DebitAuthorizerService(requestHandler)
+	response, errorService := service.DebitAuthorizerService(requestHandler)
 	if errorService != nil {
+		var message []byte = []byte(`{"message": "sorry you have reached your debit limit"}`)
 		httpUtil.ResponseJSON(message, http.StatusTooManyRequests)
 		return
 	}
 
-	httpUtil.ResponseJSON(message, http.StatusOK)
+	httpUtil.ResponseJSONSuccess(response, http.StatusOK)
 }
