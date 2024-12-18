@@ -6,7 +6,7 @@ type Client struct {
 	ClientId    string       `json:"clientId"`
 	LastPayment time.Time    `json:"lastPayment"`
 	TotalAmount float64      `json:"totalAmount"`
-	Historical  []Historical `json:"hitorical"`
+	Historical  []Historical `json:"historical"`
 }
 
 type Historical struct {
