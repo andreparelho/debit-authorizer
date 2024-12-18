@@ -8,7 +8,7 @@ import (
 	"github.com/rs/zerolog"
 )
 
-func ServiceLoggerInfo(lastPayment time.Time, totalAmount float64, clientId string, message string) {
+func ServiceLoggerInfo(clientId string, lastPayment time.Time, totalAmount float64, message string) {
 	var logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 
 	logger.Info().
@@ -19,13 +19,13 @@ func ServiceLoggerInfo(lastPayment time.Time, totalAmount float64, clientId stri
 		Msg(message)
 }
 
-func ServiceLoggerError(lastPayment time.Time, totalAmount float64, clientId string, message string) {
+func ServiceLoggerError(clientId string, amountRequest float64, totalAmount float64, message string) {
 	var logger = zerolog.New(os.Stdout).With().Timestamp().Logger()
 
 	logger.Error().
 		Str("class", "SERVICE").
-		Str("client", clientId).
-		Str("lastPayment", lastPayment.String()).
+		Str("amountRequest", clientId).
+		Str("lastPayment", strconv.Itoa(int(amountRequest))).
 		Str("totalAmount", strconv.Itoa(int(totalAmount))).
 		Msg(message)
 }
