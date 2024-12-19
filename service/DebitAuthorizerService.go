@@ -15,7 +15,7 @@ const LAST_FIVE_MINUTES = 5 * time.Minute
 const MAX_TOTAL_AMOUNT = 1000
 const EMPTY_VALUE = ""
 
-var transactionHitorical = make(map[string]model.Client)
+var clientHistorical = make(map[string]model.Client)
 var mutex sync.Mutex
 var valueMessage string
 
@@ -32,7 +32,7 @@ func DebitAuthorizerService(request request.RequestAuthorizerDebit) (model.Clien
 	}
 
 	var clientId = request.ClientId
-	client, isCreated := transactionHitorical[clientId]
+	client, isCreated := clientHistorical[clientId]
 
 	var totalAmount = client.TotalAmount + request.Amount
 	if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
@@ -56,7 +56,7 @@ func DebitAuthorizerService(request request.RequestAuthorizerDebit) (model.Clien
 	valueMessage = "debit authorized"
 	logger.ServiceLoggerInfo(clientId, client.LastPayment, totalAmount, valueMessage)
 
-	var response model.Client = repository.GetClientHitorical(clientId, transactionHitorical)
+	var response model.Client = repository.GetClientHitorical(clientId, clientHistorical)
 	return response, nil
 }
 
@@ -68,10 +68,10 @@ func validateClient(isCreated bool, client model.Client, clientId string, dateTi
 			TotalAmount: amount,
 			Historical:  []model.Historical{},
 		}
-		repository.CreateClientHistorical(transactionHitorical, client, dateTime, amount)
+		repository.CreateClientHistorical(clientHistorical, client, dateTime, amount)
 		logger.ServiceLoggerInfo(clientId, client.LastPayment, totalAmount, "client created")
 	} else {
-		repository.UpdateClientHistorical(client, transactionHitorical, clientId, dateTime, totalAmount, amount)
+		repository.UpdateClientHistorical(client, clientHistorical, clientId, dateTime, totalAmount, amount)
 		logger.ServiceLoggerInfo(clientId, client.LastPayment, totalAmount, "client updated")
 	}
 }
