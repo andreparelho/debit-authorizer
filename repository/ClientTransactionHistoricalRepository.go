@@ -8,7 +8,6 @@ import (
 )
 
 func CreateClientHistorical(clientHistorical map[string]model.Client, client model.Client, dateTime time.Time, amount float64) {
-
 	var transacation model.Historical = model.Historical{
 		Amount:   amount,
 		DateTime: dateTime,
