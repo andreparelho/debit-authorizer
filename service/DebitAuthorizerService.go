@@ -24,12 +24,7 @@ func DebitAuthorizerService(request request.RequestAuthorizerDebit) (model.Clien
 	defer mutex.Unlock()
 
 	var now time.Time = time.Now()
-	var dateTime time.Time
-	if request.DateTime.IsZero() {
-		dateTime = now
-	} else {
-		dateTime = request.DateTime
-	}
+	var dateTime time.Time = getDate(request.DateTime, now)
 
 	var clientId = request.ClientId
 	client, isCreated := clientHistorical[clientId]
@@ -58,6 +53,14 @@ func DebitAuthorizerService(request request.RequestAuthorizerDebit) (model.Clien
 
 	var response model.Client = repository.GetClientHitorical(clientId, clientHistorical)
 	return response, nil
+}
+
+func getDate(requestDate time.Time, now time.Time) time.Time {
+	if requestDate.IsZero() {
+		return now
+	}
+
+	return requestDate
 }
 
 func validateClient(isCreated bool, client model.Client, clientId string, dateTime time.Time, amount float64, totalAmount float64) {
