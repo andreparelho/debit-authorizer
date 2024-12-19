@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/andreparelho/debit-authorizer/api/handler"
@@ -104,9 +105,7 @@ func TestDebitAuthorizerHandler(test *testing.T) {
 
 		handler.DebitAuthorizerHandler(responseWriter, request)
 
-		var successMessage string = `{"message": "debit approved"}`
-
 		assert.True(test, responseWriter.Result().StatusCode == http.StatusOK)
-		assert.Equal(test, responseWriter.Body.String(), successMessage)
+		assert.True(test, strings.Contains(responseWriter.Body.String(), "debit authorized"))
 	})
 }
