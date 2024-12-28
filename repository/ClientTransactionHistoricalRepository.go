@@ -7,20 +7,20 @@ import (
 	logger "github.com/andreparelho/debit-authorizer/util/logUtil"
 )
 
-func CreateClientHistorical(clientHistorical map[string]model.Client, client model.Client, dateTime time.Time, amount float64) {
+func CreateClientHistorical(transactionHistorical map[string]model.Client, client model.Client, dateTime time.Time, amount float64) {
 	var transacation model.Historical = model.Historical{
 		Amount:   amount,
 		DateTime: dateTime,
 	}
 
 	client.Historical = append(client.Historical, transacation)
-	clientHistorical[client.ClientId] = client
+	transactionHistorical[client.ClientId] = client
 
-	historical := clientHistorical[client.ClientId]
+	historical := transactionHistorical[client.ClientId]
 	logger.RepositoryLoggerInfo(client.ClientId, historical.Historical, "created client")
 }
 
-func UpdateClientHistorical(client model.Client, clientHistorical map[string]model.Client, clientId string, dateTime time.Time, totalAmount float64, amountRequest float64) {
+func UpdateClientHistorical(client model.Client, transactionHistorical map[string]model.Client, clientId string, dateTime time.Time, totalAmount float64, amountRequest float64) {
 	var transacation model.Historical = model.Historical{
 		Amount:   amountRequest,
 		DateTime: dateTime,
@@ -29,13 +29,13 @@ func UpdateClientHistorical(client model.Client, clientHistorical map[string]mod
 	client.LastPayment = dateTime
 	client.TotalAmount = totalAmount
 	client.Historical = append(client.Historical, transacation)
-	clientHistorical[clientId] = client
+	transactionHistorical[clientId] = client
 
-	historical := clientHistorical[clientId]
+	historical := transactionHistorical[clientId]
 
 	logger.RepositoryLoggerInfo(clientId, historical.Historical, "updated client")
 }
 
-func GetClientHitorical(clientId string, clientHistorical map[string]model.Client) model.Client {
-	return clientHistorical[clientId]
+func GetClientHitorical(clientId string, transactionHistorical map[string]model.Client) model.Client {
+	return transactionHistorical[clientId]
 }
