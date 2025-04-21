@@ -91,8 +91,8 @@ func getDate(requestDate time.Time, now time.Time) time.Time {
 	return requestDate
 }
 
-func validateClient(isCreated bool, client repository.Client, clientId string, dateTime time.Time, amount float64, totalAmount float64, repo repository.ClientHistorical) {
-	if !isCreated {
+func validateClient(ok bool, client repository.Client, clientId string, dateTime time.Time, amount float64, totalAmount float64, repo repository.ClientHistorical) {
+	if !ok {
 		client = repository.Client{
 			ClientId:    clientId,
 			LastPayment: dateTime,
