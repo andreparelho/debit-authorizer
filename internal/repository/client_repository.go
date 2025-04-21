@@ -17,24 +17,20 @@ func NewClientHistorical(transactions map[string]Client) *client {
 }
 
 func (c *client) CreateClientHistorical(cl Client, dateTime time.Time, amount float64) {
-	t := Historical{
+	cl.Historical = append(cl.Historical, Historical{
 		Amount:   amount,
 		DateTime: dateTime,
-	}
-
-	cl.Historical = append(cl.Historical, t)
+	})
 	c.Transactions[cl.ClientId] = cl
 }
 
 func (c *client) UpdateClientHistorical(cl Client, id string, dateTime time.Time, totalAmount float64, amountRequest float64) {
-	t := Historical{
-		Amount:   amountRequest,
-		DateTime: dateTime,
-	}
-
 	cl.LastPayment = dateTime
 	cl.TotalAmount = totalAmount
-	cl.Historical = append(cl.Historical, t)
+	cl.Historical = append(cl.Historical, Historical{
+		Amount:   amountRequest,
+		DateTime: dateTime,
+	})
 
 	c.Transactions[id] = cl
 }
