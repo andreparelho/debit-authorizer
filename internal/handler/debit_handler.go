@@ -48,18 +48,18 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 
 		var totalAmount = client.TotalAmount + request.Amount
 		if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		if totalAmount > MAX_TOTAL_AMOUNT {
-			w.WriteHeader(http.StatusInternalServerError)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		validateClient(ok, client, clientId, dateTime, request.Amount, totalAmount, repo)
 
-		responseRepository := repo.GetClientHitorical(clientId)
+		responseRepository := repo.GetClientHistorical(clientId)
 		var response []byte
 		if response, err = json.Marshal(responseRepository); err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
