@@ -3,11 +3,14 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"io"
 	"net/http"
+	"os"
 	"sync"
 	"time"
 
 	"github.com/andreparelho/debit-authorizer/internal/repository"
+	"github.com/rs/zerolog"
 )
 
 const (
@@ -21,19 +24,43 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 
+		logger := zerolog.New(os.Stdout).With().Timestamp().Logger()
+
 		if r.Method != http.MethodPost {
-			w.WriteHeader(http.StatusInternalServerError)
+			logger.Error().
+				Str("component", "handler.DebitAuthorizerHandler").
+				Str("erro", "wrong method")
+
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		body, err := io.ReadAll(r.Body)
+		if err != nil {
+			logger.Error().
+				Str("component", "handler.DebitAuthorizerHandler").
+				Str("erro", "error to read body request")
+
+			w.WriteHeader(http.StatusMethodNotAllowed)
 			return
 		}
 
 		var request RequestAuthorizerDebit
-		if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		if err := json.Unmarshal(body, &request); err != nil {
+			logger.Error().
+				Str("component", "handler.DebitAuthorizerHandler").
+				Str("erro", "error to unmarshal request")
+
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		err := validateRequest(request)
-		if err != nil {
+		errValidate := validateRequest(request)
+		if errValidate != nil {
+			logger.Error().
+				Str("component", "handler.DebitAuthorizerHandler").
+				Str("erro", errValidate.Error())
+
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
@@ -48,11 +75,19 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 
 		var totalAmount = client.TotalAmount + request.Amount
 		if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
+			logger.Error().
+				Str("component", "handler.DebitAuthorizerHandler").
+				Str("erro", "sorry you have reached your debit limit")
+
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 
 		if totalAmount > MAX_TOTAL_AMOUNT {
+			logger.Error().
+				Str("component", "handler.DebitAuthorizerHandler").
+				Str("erro", "sorry the amount sent is greater than the allowed limit")
+
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -62,9 +97,19 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 		responseRepository := repo.GetClientHistorical(clientId)
 		var response []byte
 		if response, err = json.Marshal(responseRepository); err != nil {
+			logger.Error().
+				Str("component", "handler.DebitAuthorizerHandler").
+				Str("erro", "error to marshal response repository")
+
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+
+		logger.Info().
+			Str("id", responseRepository.ClientId).
+			Time("last_payment", responseRepository.LastPayment).
+			Int("historics", len(responseRepository.Historical)).
+			Float64("total_amount", responseRepository.TotalAmount)
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
@@ -75,9 +120,9 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 func validateRequest(request RequestAuthorizerDebit) error {
 	switch {
 	case request.ClientId == "":
-		return errors.New("propertie clientId is empty")
+		return errors.New("campo id vazio")
 	case request.Amount < 0.01:
-		return errors.New("propertie amount is empty or less than minimum")
+		return errors.New("amount vazio ou menor que 0.01")
 	default:
 		return nil
 	}
