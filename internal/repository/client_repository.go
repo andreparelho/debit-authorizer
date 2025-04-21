@@ -7,7 +7,7 @@ import (
 type ClientHistorical interface {
 	CreateClientHistorical(cl Client, dateTime time.Time, amount float64)
 	UpdateClientHistorical(cl Client, id string, dateTime time.Time, totalAmount float64, amountRequest float64)
-	GetClientHitorical(id string) Client
+	GetClientHistorical(id string) Client
 }
 
 func NewClientHistorical(transactions map[string]Client) *client {
@@ -39,6 +39,6 @@ func (c *client) UpdateClientHistorical(cl Client, id string, dateTime time.Time
 	c.Transactions[id] = cl
 }
 
-func (c *client) GetClientHitorical(id string) Client {
+func (c *client) GetClientHistorical(id string) Client {
 	return c.Transactions[id]
 }
