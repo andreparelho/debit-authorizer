@@ -65,15 +65,15 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 			return
 		}
 
-		var now time.Time = time.Now()
-		var dateTime time.Time = getDate(request.DateTime, now)
+		now := time.Now()
+		dateTime := getDate(request.DateTime, now)
 
 		mutex.Lock()
 		var clientId = request.ClientId
 		client, ok := transactions[clientId]
 		mutex.Unlock()
 
-		var totalAmount = client.TotalAmount + request.Amount
+		totalAmount := client.TotalAmount + request.Amount
 		if totalAmount > MAX_TOTAL_AMOUNT && now.Sub(client.LastPayment) <= LAST_FIVE_MINUTES {
 			logger.Error().
 				Str("component", "handler.DebitAuthorizerHandler").
