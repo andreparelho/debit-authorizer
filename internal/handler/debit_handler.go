@@ -95,8 +95,13 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 		validateClient(ok, client, clientId, dateTime, request.Amount, totalAmount, repo)
 
 		responseRepository := repo.GetClientHistorical(clientId)
-		var response []byte
-		if response, err = json.Marshal(responseRepository); err != nil {
+		response := ResponseAuthorizerDebit{
+			Message:          "debit authorized",
+			ClientHistorical: responseRepository,
+		}
+
+		var responseHandler []byte
+		if responseHandler, err = json.Marshal(response); err != nil {
 			logger.Error().
 				Str("component", "handler.DebitAuthorizerHandler").
 				Str("erro", "error to marshal response repository")
@@ -113,7 +118,7 @@ func DebitAuthorizerHandler(repo repository.ClientHistorical, transactions map[s
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write(response)
+		w.Write(responseHandler)
 	}
 }
 
